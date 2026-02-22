@@ -1,14 +1,31 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import ExploreBtn from "@/components/ExploreBtn";
 import EventCard from "@/components/EventCard";
 import {IEvent} from "@/database";
 
-
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000');
 
-const Page = async () => {
+const Page = () => {
+    const [events, setEvents] = useState<IEvent[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const response = await fetch(`${BASE_URL}/api/events`);
-    const { events } = await response.json();
+    useEffect(() => {
+        const fetchEvents = async () => {
+            try {
+                const response = await fetch(`${BASE_URL}/api/events`);
+                const data = await response.json();
+                setEvents(data.events || []);
+            } catch (error) {
+                console.error('Failed to fetch events:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchEvents();
+    }, []);
 
     return (
         <section>
@@ -20,13 +37,20 @@ const Page = async () => {
             <div className="mt-20 space-y-7">
                 <h3>Featured Events</h3>
 
-                <ul className="events">
-                    {events && events.length > 0 && events.map((event: IEvent) => (
-                        <li key={event.title} className="list-none">
-                            <EventCard {...event} />
-                        </li>
-                    ))}
-                </ul>
+                {loading ? (
+                    <p className="text-center">Loading events...</p>
+                ) : (
+                    <ul className="events">
+                        {events && events.length > 0 && events.map((event: IEvent) => (
+                            <li key={String(event._id)} className="list-none">
+                                <EventCard {...event} />
+                            </li>
+                        ))}
+                        {(!events || events.length === 0) && (
+                            <p className="text-center">No events found.</p>
+                        )}
+                    </ul>
+                )}
             </div>
         </section>
     )
