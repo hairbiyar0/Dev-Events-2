@@ -91,7 +91,7 @@ const EventDetails = async ({ params }: PageProps) => {
             <div className="agenda">
               <h2>Agenda</h2>
               <ul>
-                {event.agenda.map((item) => (
+                {event.agenda.map((item: string) => (
                   <li key={item}>{item}</li>
                 ))}
               </ul>
