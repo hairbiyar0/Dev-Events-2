@@ -4,6 +4,7 @@ import connectDB from '@/lib/mongodb';
 import {Event} from "@/database";
 import { ObjectId } from 'mongodb';
 import cloudinary from '@/lib/cloudinary';
+import { setCorsHeaders, handleCors } from '@/lib/cors';
 
 // Define route params type for type safety
 type RouteParams = {
@@ -20,6 +21,10 @@ export async function GET(
     req: NextRequest,
     { params }: RouteParams
 ): Promise<NextResponse> {
+    // Handle CORS preflight
+    const corsResponse = handleCors(req);
+    if (corsResponse) return corsResponse;
+
     try {
         // Connect to database
         await connectDB();
@@ -50,17 +55,21 @@ export async function GET(
 
         // Handle events not found
         if (!event) {
-            return NextResponse.json(
+            const response = NextResponse.json(
                 { message: `Event with slug '${sanitizedSlug}' not found` },
                 { status: 404 }
             );
+            setCorsHeaders(response);
+            return response;
         }
 
         // Return successful response with events data
-        return NextResponse.json(
+        const response = NextResponse.json(
             { message: 'Event fetched successfully', event },
             { status: 200 }
         );
+        setCorsHeaders(response);
+        return response;
     } catch (error) {
         // Log error for debugging (only in development)
         if (process.env.NODE_ENV === 'development') {
@@ -78,10 +87,12 @@ export async function GET(
             }
 
             // Return generic error with error message
-            return NextResponse.json(
+            const response = NextResponse.json(
                 { message: 'Failed to fetch events', error: error.message },
                 { status: 500 }
             );
+            setCorsHeaders(response);
+            return response;
         }
 
         // Handle unknown errors
@@ -100,6 +111,10 @@ export async function PUT(
     req: NextRequest,
     { params }: RouteParams
 ): Promise<NextResponse> {
+    // Handle CORS preflight
+    const corsResponse = handleCors(req);
+    if (corsResponse) return corsResponse;
+
     try {
         // Connect to database
         await connectDB();
@@ -226,6 +241,10 @@ export async function DELETE(
     req: NextRequest,
     { params }: RouteParams
 ): Promise<NextResponse> {
+    // Handle CORS preflight
+    const corsResponse = handleCors(req);
+    if (corsResponse) return corsResponse;
+
     try {
         // Connect to database
         await connectDB();

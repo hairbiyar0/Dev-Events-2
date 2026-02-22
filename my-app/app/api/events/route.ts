@@ -3,16 +3,23 @@ import {NextRequest, NextResponse} from "next/server";
 import connectDB from "@/lib/mongodb";
 import {Event} from "@/database";
 import cloudinary from "@/lib/cloudinary";
+import { setCorsHeaders, handleCors } from "@/lib/cors";
 
 export async function POST(req: NextRequest) {
+    // Handle CORS preflight
+    const corsResponse = handleCors(req);
+    if (corsResponse) return corsResponse;
+
     try {
         await connectDB();
 
         // Check Cloudinary configuration
         if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
-            return NextResponse.json({ 
+            const response = NextResponse.json({ 
                 message: 'Cloudinary configuration missing. Please check environment variables.' 
             }, { status: 500 });
+            setCorsHeaders(response);
+            return response;
         }
 
         const formData = await req.formData();
@@ -53,10 +60,14 @@ export async function POST(req: NextRequest) {
             agenda: agenda,
         });
 
-        return NextResponse.json({ message: 'Event created successfully', event: createdEvent }, { status: 201 });
+        const response = NextResponse.json({ message: 'Event created successfully', event: createdEvent }, { status: 201 });
+        setCorsHeaders(response);
+        return response;
     } catch (e) {
         console.error(e);
-        return NextResponse.json({ message: 'Event Creation Failed', error: e instanceof Error ? e.message : 'Unknown'}, { status: 500 })
+        const response = NextResponse.json({ message: 'Event Creation Failed', error: e instanceof Error ? e.message : 'Unknown'}, { status: 500 });
+        setCorsHeaders(response);
+        return response;
     }
 }
 
@@ -66,8 +77,12 @@ export async function GET() {
 
         const events = await Event.find().sort({ createdAt: -1 });
 
-        return NextResponse.json({ message: 'Events fetched successfully', events }, { status: 200 });
+        const response = NextResponse.json({ message: 'Events fetched successfully', events }, { status: 200 });
+        setCorsHeaders(response);
+        return response;
     } catch (e) {
-        return NextResponse.json({ message: 'Event fetching failed', error: e }, { status: 500 });
+        const response = NextResponse.json({ message: 'Event fetching failed', error: e }, { status: 500 });
+        setCorsHeaders(response);
+        return response;
     }
 }
