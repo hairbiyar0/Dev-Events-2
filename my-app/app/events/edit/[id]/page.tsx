@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useToast } from "@/components/Toast";
 
 // Use relative URL for API calls (works in both dev and production)
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+const BASE_URL = '';
 
 interface EventData {
   _id: string;

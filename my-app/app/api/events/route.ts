@@ -26,7 +26,11 @@ export async function POST(req: NextRequest) {
 
         const file = formData.get('image') as File;
 
-        if(!file) return NextResponse.json({ message: 'Image file is required'}, { status: 400 })
+        if(!file) {
+            const response = NextResponse.json({ message: 'Image file is required'}, { status: 400 });
+            setCorsHeaders(response);
+            return response;
+        }
 
         // Extract tags and agenda from form data (they are sent as multiple entries)
         const tags = formData.getAll('tags') as string[];
